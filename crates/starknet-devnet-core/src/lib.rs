@@ -6,7 +6,7 @@ pub mod error;
 pub mod messaging;
 mod predeployed_accounts;
 pub mod starknet;
-mod state;
+pub mod state;
 mod system_contract;
 mod traits;
 mod transactions;

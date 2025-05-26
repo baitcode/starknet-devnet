@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use blockifier::state::cached_state::CachedState;
-use blockifier::state::state_api::{State, StateReader};
+pub use blockifier::state::state_api::{State, StateReader};
 use parking_lot::RwLock;
 use starknet_api::core::CompiledClassHash;
 use starknet_rs_core::types::Felt;
@@ -145,7 +145,7 @@ impl CommittedClassStorage {
 }
 
 pub struct StarknetState {
-    pub(crate) state: CachedState<DictState>,
+    pub state: CachedState<DictState>,
     /// The class storage is meant to be shared between states to prevent copying (due to memory
     /// concerns). Knowing which class was added when is made possible by storing the class
     /// together with the block number.

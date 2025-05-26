@@ -25,7 +25,7 @@ pub trait HashIdentifiedMut {
     fn get_by_hash_mut(&mut self, hash: &Self::Hash) -> Option<&mut Self::Element>;
 }
 
-pub(crate) trait Deployed {
+pub trait Deployed {
     fn deploy(&self, state: &mut StarknetState) -> DevnetResult<()>;
     fn get_address(&self) -> ContractAddress;
     /// `class_hash` is sierra hash for cairo1 contracts
