@@ -9,7 +9,7 @@ use crate::felt::{BlockHash, TransactionHash};
 use crate::rpc::messaging::MessageToL1;
 use crate::rpc::transactions::TransactionType;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize))]
 pub enum TransactionReceipt {
@@ -31,7 +31,7 @@ impl TransactionReceipt {
     }
 }
 
-#[derive(Debug, Clone, Serialize)] // TODO PartialEq, Eq?
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)] // TODO PartialEq, Eq?
 #[cfg_attr(feature = "testing", derive(serde::Deserialize))]
 pub struct DeployTransactionReceipt {
     #[serde(flatten)]
@@ -39,7 +39,7 @@ pub struct DeployTransactionReceipt {
     pub contract_address: ContractAddress,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize))]
 pub struct L1HandlerTransactionReceipt {
     #[serde(flatten)]
@@ -47,7 +47,7 @@ pub struct L1HandlerTransactionReceipt {
     pub message_hash: Hash256,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize))]
 pub struct MaybePendingProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,7 +56,7 @@ pub struct MaybePendingProperties {
     pub block_number: Option<BlockNumber>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize), serde(deny_unknown_fields))]
 pub struct CommonTransactionReceipt {
     pub r#type: TransactionType,
@@ -72,7 +72,7 @@ pub struct CommonTransactionReceipt {
     pub execution_resources: ExecutionResources,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize), serde(deny_unknown_fields))]
 pub struct ExecutionResources {
     pub l1_gas: u64,
@@ -90,13 +90,13 @@ impl From<&blockifier::transaction::objects::TransactionExecutionInfo> for Execu
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(Deserialize), serde(deny_unknown_fields))]
 pub struct FeeAmount {
     pub amount: Fee,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(Deserialize))]
 #[serde(tag = "unit")]
 pub enum FeeInUnits {

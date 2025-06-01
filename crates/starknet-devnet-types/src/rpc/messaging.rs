@@ -47,7 +47,7 @@ impl MessageToL2 {
 pub type L2ToL1Payload = Vec<Felt>;
 
 /// An L2 to L1 message.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MessageToL1 {
     pub from_address: ContractAddress,

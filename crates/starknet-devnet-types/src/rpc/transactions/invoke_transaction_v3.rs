@@ -15,17 +15,17 @@ use crate::felt::{Calldata, Nonce, TransactionSignature, TransactionVersion};
     serde(deny_unknown_fields)
 )]
 pub struct InvokeTransactionV3 {
-    version: TransactionVersion,
-    signature: TransactionSignature,
-    nonce: Nonce,
-    resource_bounds: ResourceBoundsWrapper,
-    tip: Tip,
-    paymaster_data: Vec<Felt>,
-    nonce_data_availability_mode: DataAvailabilityMode,
-    fee_data_availability_mode: DataAvailabilityMode,
-    account_deployment_data: Vec<Felt>,
+    pub(crate) version: TransactionVersion,
+    pub(crate) signature: TransactionSignature,
+    pub(crate) nonce: Nonce,
+    pub(crate) resource_bounds: ResourceBoundsWrapper,
+    pub(crate) tip: Tip,
+    pub(crate) paymaster_data: Vec<Felt>,
+    pub(crate) nonce_data_availability_mode: DataAvailabilityMode,
+    pub(crate) fee_data_availability_mode: DataAvailabilityMode,
+    pub(crate) account_deployment_data: Vec<Felt>,
     pub(crate) sender_address: ContractAddress,
-    calldata: Calldata,
+    pub(crate) calldata: Calldata,
 }
 
 impl InvokeTransactionV3 {

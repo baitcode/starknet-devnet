@@ -15,18 +15,18 @@ use crate::felt::{ClassHash, CompiledClassHash, Nonce, TransactionSignature, Tra
     serde(deny_unknown_fields)
 )]
 pub struct DeclareTransactionV3 {
-    version: TransactionVersion,
-    signature: TransactionSignature,
-    nonce: Nonce,
-    resource_bounds: ResourceBoundsWrapper,
-    tip: Tip,
-    paymaster_data: Vec<Felt>,
-    nonce_data_availability_mode: DataAvailabilityMode,
-    fee_data_availability_mode: DataAvailabilityMode,
+    pub(crate) version: TransactionVersion,
+    pub(crate) signature: TransactionSignature,
+    pub(crate) nonce: Nonce,
+    pub(crate) resource_bounds: ResourceBoundsWrapper,
+    pub(crate) tip: Tip,
+    pub(crate) paymaster_data: Vec<Felt>,
+    pub(crate) nonce_data_availability_mode: DataAvailabilityMode,
+    pub(crate) fee_data_availability_mode: DataAvailabilityMode,
     pub(crate) sender_address: ContractAddress,
-    compiled_class_hash: CompiledClassHash,
-    class_hash: ClassHash,
-    account_deployment_data: Vec<Felt>,
+    pub(crate) compiled_class_hash: CompiledClassHash,
+    pub(crate) class_hash: ClassHash,
+    pub(crate) account_deployment_data: Vec<Felt>,
 }
 
 impl DeclareTransactionV3 {

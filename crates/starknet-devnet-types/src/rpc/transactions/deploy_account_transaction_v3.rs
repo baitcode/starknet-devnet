@@ -17,19 +17,19 @@ use crate::felt::{
     serde(deny_unknown_fields)
 )]
 pub struct DeployAccountTransactionV3 {
-    version: TransactionVersion,
-    signature: TransactionSignature,
-    nonce: Nonce,
-    resource_bounds: ResourceBoundsWrapper,
-    tip: Tip,
-    paymaster_data: Vec<Felt>,
-    nonce_data_availability_mode: DataAvailabilityMode,
-    fee_data_availability_mode: DataAvailabilityMode,
-    contract_address_salt: ContractAddressSalt,
-    constructor_calldata: Calldata,
-    class_hash: ClassHash,
+    pub(crate) version: TransactionVersion,
+    pub(crate) signature: TransactionSignature,
+    pub(crate) nonce: Nonce,
+    pub(crate) resource_bounds: ResourceBoundsWrapper,
+    pub(crate) tip: Tip,
+    pub(crate) paymaster_data: Vec<Felt>,
+    pub(crate) nonce_data_availability_mode: DataAvailabilityMode,
+    pub(crate) fee_data_availability_mode: DataAvailabilityMode,
+    pub(crate) contract_address_salt: ContractAddressSalt,
+    pub(crate) constructor_calldata: Calldata,
+    pub(crate) class_hash: ClassHash,
     #[serde(skip)]
-    contract_address: ContractAddress,
+    pub(crate) contract_address: ContractAddress,
 }
 
 impl DeployAccountTransactionV3 {

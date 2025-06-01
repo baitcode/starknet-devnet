@@ -63,7 +63,7 @@ pub enum Transactions {
     FullWithReceipts(Vec<TransactionWithReceipt>),
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Default)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Default, PartialEq)]
 #[cfg_attr(feature = "testing", derive(Deserialize))]
 pub enum TransactionType {
     #[serde(rename(deserialize = "DECLARE", serialize = "DECLARE"))]
@@ -303,7 +303,7 @@ pub struct BroadcastedTransactionCommonV3 {
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "testing", derive(PartialEq, Eq))]
 pub struct ResourceBoundsWrapper {
-    inner: ResourceBoundsMapping,
+    pub(crate) inner: ResourceBoundsMapping,
 }
 
 impl From<&ResourceBoundsWrapper> for GasVectorComputationMode {
@@ -637,7 +637,6 @@ impl BroadcastedDeployAccountTransaction {
                         v3.constructor_calldata.clone(),
                     )),
                 };
-
                 starknet_api::transaction::DeployAccountTransaction::V3(sn_api_transaction)
             }
         };
@@ -796,19 +795,19 @@ pub enum CallType {
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize), serde(deny_unknown_fields))]
 pub struct FunctionInvocation {
-    contract_address: ContractAddress,
-    entry_point_selector: EntryPointSelector,
-    calldata: Calldata,
-    caller_address: ContractAddress,
-    class_hash: Felt,
-    entry_point_type: EntryPointType,
-    call_type: CallType,
-    result: Vec<Felt>,
-    calls: Vec<FunctionInvocation>,
-    events: Vec<OrderedEvent>,
-    messages: Vec<OrderedMessageToL1>,
-    execution_resources: InnerExecutionResources,
-    is_reverted: bool,
+    pub(crate) contract_address: ContractAddress,
+    pub(crate) entry_point_selector: EntryPointSelector,
+    pub(crate) calldata: Calldata,
+    pub(crate) caller_address: ContractAddress,
+    pub(crate) class_hash: Felt,
+    pub(crate) entry_point_type: EntryPointType,
+    pub(crate) call_type: CallType,
+    pub(crate) result: Vec<Felt>,
+    pub(crate) calls: Vec<FunctionInvocation>,
+    pub(crate) events: Vec<OrderedEvent>,
+    pub(crate) messages: Vec<OrderedMessageToL1>,
+    pub(crate) execution_resources: InnerExecutionResources,
+    pub(crate) is_reverted: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

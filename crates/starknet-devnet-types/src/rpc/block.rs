@@ -1,38 +1,39 @@
 use serde::{Deserialize, Deserializer, Serialize};
 use starknet_api::block::{BlockNumber, BlockStatus, BlockTimestamp};
 use starknet_api::data_availability::L1DataAvailabilityMode;
-use starknet_rs_core::types::{BlockId as ImportedBlockId, BlockTag as ImportedBlockTag, Felt};
+use starknet_rs_core::types::{self as imported};
 
 use crate::contract_address::ContractAddress;
 use crate::felt::BlockHash;
 use crate::rpc::transactions::Transactions;
-pub type BlockRoot = Felt;
+
+pub type BlockRoot = imported::Felt;
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 pub enum BlockHashOrNumber {
     #[serde(rename = "block_hash")]
-    Hash(Felt),
+    Hash(imported::Felt),
     #[serde(rename = "block_number")]
     Number(u64),
 }
 
 #[derive(Clone, Debug, Serialize)]
 #[cfg_attr(feature = "testing", derive(PartialEq, Eq))]
-pub struct BlockId(pub ImportedBlockId);
+pub struct BlockId(pub imported::BlockId);
 
-impl From<ImportedBlockId> for BlockId {
-    fn from(value: ImportedBlockId) -> Self {
+impl From<imported::BlockId> for BlockId {
+    fn from(value: imported::BlockId) -> Self {
         Self(value)
     }
 }
 
-impl AsRef<ImportedBlockId> for BlockId {
-    fn as_ref(&self) -> &ImportedBlockId {
+impl AsRef<imported::BlockId> for BlockId {
+    fn as_ref(&self) -> &imported::BlockId {
         &self.0
     }
 }
 
-impl From<BlockId> for ImportedBlockId {
+impl From<BlockId> for imported::BlockId {
     fn from(block_id: BlockId) -> Self {
         block_id.0
     }
@@ -45,15 +46,15 @@ impl<'de> Deserialize<'de> for BlockId {
     {
         let value = serde_json::Value::deserialize(deserializer)?;
         if value.as_str().is_some() {
-            let block_tag: ImportedBlockTag = serde_json::from_value(value)
+            let block_tag: imported::BlockTag = serde_json::from_value(value)
                 .map_err(|e| serde::de::Error::custom(format!("Invalid block ID: {e}")))?;
-            Ok(BlockId(ImportedBlockId::Tag(block_tag)))
+            Ok(BlockId(imported::BlockId::Tag(block_tag)))
         } else if value.as_object().is_some() {
             let block_id: BlockHashOrNumber = serde_json::from_value(value)
                 .map_err(|e| serde::de::Error::custom(format!("Invalid block ID: {e}")))?;
             match block_id {
-                BlockHashOrNumber::Hash(hash) => Ok(BlockId(ImportedBlockId::Hash(hash))),
-                BlockHashOrNumber::Number(number) => Ok(BlockId(ImportedBlockId::Number(number))),
+                BlockHashOrNumber::Hash(hash) => Ok(BlockId(imported::BlockId::Hash(hash))),
+                BlockHashOrNumber::Number(number) => Ok(BlockId(imported::BlockId::Number(number))),
             }
         } else {
             Err(serde::de::Error::custom(format!("Invalid block ID: {value}")))
@@ -117,8 +118,8 @@ pub struct PendingBlockHeader {
 pub struct ResourcePrice {
     // for now this will be always 0, this field is introduced in 0.5.0
     // but current version of blockifier/starknet_api doesn't return this value
-    pub price_in_fri: Felt,
-    pub price_in_wei: Felt,
+    pub price_in_fri: imported::Felt,
+    pub price_in_wei: imported::Felt,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -137,7 +138,7 @@ pub struct ReorgData {
 
 #[derive(Debug, Clone)]
 pub enum SubscriptionBlockId {
-    Hash(Felt),
+    Hash(imported::Felt),
     Number(u64),
     Latest,
 }
@@ -147,30 +148,30 @@ impl<'de> Deserialize<'de> for SubscriptionBlockId {
     where
         D: Deserializer<'de>,
     {
-        let block_id = ImportedBlockId::deserialize(deserializer)?;
+        let block_id = imported::BlockId::deserialize(deserializer)?;
         Ok(match block_id {
-            ImportedBlockId::Hash(felt) => Self::Hash(felt),
-            ImportedBlockId::Number(n) => Self::Number(n),
-            ImportedBlockId::Tag(ImportedBlockTag::Latest) => Self::Latest,
-            ImportedBlockId::Tag(ImportedBlockTag::Pending) => {
+            imported::BlockId::Hash(felt) => Self::Hash(felt),
+            imported::BlockId::Number(n) => Self::Number(n),
+            imported::BlockId::Tag(imported::BlockTag::Latest) => Self::Latest,
+            imported::BlockId::Tag(imported::BlockTag::Pending) => {
                 return Err(serde::de::Error::custom("Subscription block cannot be 'pending'"));
             }
         })
     }
 }
 
-impl From<SubscriptionBlockId> for ImportedBlockId {
+impl From<SubscriptionBlockId> for imported::BlockId {
     fn from(value: SubscriptionBlockId) -> Self {
         (&value).into()
     }
 }
 
-impl From<&SubscriptionBlockId> for ImportedBlockId {
+impl From<&SubscriptionBlockId> for imported::BlockId {
     fn from(value: &SubscriptionBlockId) -> Self {
         match value {
             SubscriptionBlockId::Hash(hash) => Self::Hash(*hash),
             SubscriptionBlockId::Number(n) => Self::Number(*n),
-            SubscriptionBlockId::Latest => Self::Tag(ImportedBlockTag::Latest),
+            SubscriptionBlockId::Latest => Self::Tag(imported::BlockTag::Latest),
         }
     }
 }

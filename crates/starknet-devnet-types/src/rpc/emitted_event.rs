@@ -1,11 +1,11 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use starknet_api::block::BlockNumber;
 use starknet_types_core::felt::Felt;
 
 use crate::contract_address::ContractAddress;
 use crate::felt::{BlockHash, TransactionHash};
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize), serde(deny_unknown_fields))]
 pub struct EmittedEvent {
     pub transaction_hash: TransactionHash,
@@ -18,7 +18,7 @@ pub struct EmittedEvent {
     pub data: Vec<Felt>,
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Deserialize, PartialEq)]
 #[cfg_attr(feature = "testing", derive(serde::Deserialize), serde(deny_unknown_fields))]
 pub struct Event {
     pub from_address: ContractAddress,

@@ -11,3 +11,4 @@ pub mod messaging;
 pub mod state;
 pub mod transaction_receipt;
 pub mod transactions;
+pub mod type_conversions;
