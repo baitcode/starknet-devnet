@@ -5,7 +5,9 @@ use cairo_lang_starknet_classes::contract_class::{
 };
 use cairo_lang_utils::bigint::BigUintAsHex;
 
-use starknet_rs_core::types::{self as imported, FlattenedSierraClass, SierraEntryPoint};
+use starknet_rs_core::types::{self as imported};
+
+use crate::rpc::transactions::BroadcastedTransactionCommonV3;
 
 use super::block::{Block, PendingBlock, ResourcePrice};
 use super::contract_address::ContractAddress;
@@ -20,6 +22,7 @@ use super::transaction_receipt::{ExecutionResources, FeeInUnits, TransactionRece
 use super::transactions::broadcasted_declare_transaction_v3::BroadcastedDeclareTransactionV3;
 use super::transactions::broadcasted_deploy_account_transaction_v3::BroadcastedDeployAccountTransactionV3;
 use super::transactions::broadcasted_invoke_transaction_v3::BroadcastedInvokeTransactionV3;
+
 use super::transactions::{
     BlockTransactionTrace, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
     BroadcastedInvokeTransaction, BroadcastedTransaction, CallType, DeclareTransaction,
@@ -30,7 +33,12 @@ use super::transactions::{
 };
 
 //
-// Conversions into core types
+// Part 1.
+//
+// Conversions between devnet-core types and starknet-rs core types
+// mostly from starknet-rs to starknet-devnet-types
+//
+// TODO: add backward conversions for all that are missing.
 //
 
 impl Into<Vec<imported::Felt>> for Transactions {
@@ -342,22 +350,6 @@ impl Into<imported::Event> for Event {
             from_address: self.from_address.0.to_felt(),
             keys: self.keys,
             data: self.data,
-        }
-    }
-}
-
-impl Into<imported::EmittedEvent> for &EmittedEvent {
-    fn into(self) -> imported::EmittedEvent {
-        imported::EmittedEvent {
-            block_hash: self.block_hash,
-            block_number: match self.block_number {
-                Some(val) => Some(val.0),
-                None => None,
-            },
-            transaction_hash: self.transaction_hash,
-            from_address: self.from_address.into(),
-            keys: self.keys.clone(),
-            data: self.data.clone(),
         }
     }
 }
@@ -1202,13 +1194,13 @@ impl From<imported::SimulationFlag> for SimulationFlag {
 impl From<FeeEstimateWrapper> for imported::FeeEstimate {
     fn from(value: FeeEstimateWrapper) -> Self {
         imported::FeeEstimate {
-            l1_gas_consumed: value.l1_gas_consumed,
-            l1_gas_price: value.l1_gas_price,
-            l2_gas_consumed: value.l2_gas_consumed,
-            l2_gas_price: value.l2_gas_price,
-            l1_data_gas_consumed: value.l1_data_gas_consumed,
-            l1_data_gas_price: value.l1_data_gas_price,
-            overall_fee: value.overall_fee,
+            l1_gas_consumed: value.l1_gas_consumed.try_into().unwrap(),
+            l1_gas_price: value.l1_gas_price.try_into().unwrap(),
+            l2_gas_consumed: value.l2_gas_consumed.try_into().unwrap(),
+            l2_gas_price: value.l2_gas_price.try_into().unwrap(),
+            l1_data_gas_consumed: value.l1_data_gas_consumed.try_into().unwrap(),
+            l1_data_gas_price: value.l1_data_gas_price.try_into().unwrap(),
+            overall_fee: value.overall_fee.try_into().unwrap(),
             unit: value.unit,
         }
     }
@@ -1275,7 +1267,7 @@ impl From<imported::BroadcastedTransaction> for BroadcastedTransaction {
 }
 
 pub fn sierra_from_contract_class(
-    contract_class: Arc<FlattenedSierraClass>,
+    contract_class: Arc<imported::FlattenedSierraClass>,
 ) -> SierraContractClass {
     SierraContractClass {
         sierra_program: contract_class
@@ -1322,8 +1314,10 @@ pub fn sierra_from_contract_class(
     }
 }
 
-pub fn contract_class_from_sierra(contract_class: SierraContractClass) -> FlattenedSierraClass {
-    FlattenedSierraClass {
+pub fn contract_class_from_sierra(
+    contract_class: SierraContractClass,
+) -> imported::FlattenedSierraClass {
+    imported::FlattenedSierraClass {
         sierra_program: contract_class
             .sierra_program
             .iter()
@@ -1339,7 +1333,7 @@ pub fn contract_class_from_sierra(contract_class: SierraContractClass) -> Flatte
                 .constructor
                 .iter()
                 .cloned()
-                .map(|el| SierraEntryPoint {
+                .map(|el| imported::SierraEntryPoint {
                     selector: el.selector.into(),
                     function_idx: el.function_idx as u64,
                 })
@@ -1349,7 +1343,7 @@ pub fn contract_class_from_sierra(contract_class: SierraContractClass) -> Flatte
                 .external
                 .iter()
                 .cloned()
-                .map(|el| SierraEntryPoint {
+                .map(|el| imported::SierraEntryPoint {
                     selector: el.selector.into(),
                     function_idx: el.function_idx as u64,
                 })
@@ -1359,7 +1353,7 @@ pub fn contract_class_from_sierra(contract_class: SierraContractClass) -> Flatte
                 .l1_handler
                 .iter()
                 .cloned()
-                .map(|el| SierraEntryPoint {
+                .map(|el| imported::SierraEntryPoint {
                     selector: el.selector.into(),
                     function_idx: el.function_idx as u64,
                 })
@@ -1398,5 +1392,152 @@ impl From<StateUpdateResult> for imported::MaybePendingStateUpdate {
                 })
             }
         }
+    }
+}
+
+impl From<EmittedEvent> for imported::EmittedEvent {
+    fn from(value: EmittedEvent) -> Self {
+        imported::EmittedEvent {
+            transaction_hash: value.transaction_hash,
+            block_hash: value.block_hash,
+            block_number: value.block_number.map(|el| el.0),
+            from_address: value.from_address.into(),
+            keys: value.keys,
+            data: value.data,
+        }
+    }
+}
+
+impl<'a> From<&'a EmittedEvent> for imported::EmittedEvent {
+    fn from(value: &'a EmittedEvent) -> Self {
+        imported::EmittedEvent {
+            transaction_hash: value.transaction_hash,
+            block_hash: value.block_hash,
+            block_number: value.block_number.map(|el| el.0),
+            from_address: value.from_address.into(),
+            keys: value.keys.clone(),
+            data: value.data.clone(),
+        }
+    }
+}
+
+//
+// Part 2.
+//
+// Conversions between devnet-core types and starknet-api types
+// mostly from starknet-rs to starknet-devnet-types. Only transactions. Needed for transaction hash calculations.
+//
+// TODO: add backward conversions for all that are missing.
+//
+
+impl From<starknet_api::transaction::fields::ValidResourceBounds> for ResourceBoundsWrapper {
+    fn from(value: starknet_api::transaction::fields::ValidResourceBounds) -> Self {
+        match value {
+            starknet_api::transaction::fields::ValidResourceBounds::L1Gas(resource_bounds) => {
+                ResourceBoundsWrapper {
+                    inner: imported::ResourceBoundsMapping {
+                        l1_gas: imported::ResourceBounds {
+                            max_amount: resource_bounds.max_amount.0,
+                            max_price_per_unit: resource_bounds.max_price_per_unit.0,
+                        },
+                        l1_data_gas: imported::ResourceBounds {
+                            max_amount: 0, // No L1 data gas for this case
+                            max_price_per_unit: 0,
+                        },
+                        l2_gas: imported::ResourceBounds {
+                            max_amount: 0, // No L2 gas for this case
+                            max_price_per_unit: 0,
+                        },
+                    },
+                }
+            }
+            starknet_api::transaction::fields::ValidResourceBounds::AllResources(
+                all_resource_bounds,
+            ) => ResourceBoundsWrapper {
+                inner: imported::ResourceBoundsMapping {
+                    l1_gas: imported::ResourceBounds {
+                        max_amount: all_resource_bounds.l1_gas.max_amount.0,
+                        max_price_per_unit: all_resource_bounds.l1_gas.max_price_per_unit.0,
+                    },
+                    l1_data_gas: imported::ResourceBounds {
+                        max_amount: all_resource_bounds.l1_data_gas.max_amount.0,
+                        max_price_per_unit: all_resource_bounds.l1_data_gas.max_price_per_unit.0,
+                    },
+                    l2_gas: imported::ResourceBounds {
+                        max_amount: all_resource_bounds.l2_gas.max_amount.0,
+                        max_price_per_unit: all_resource_bounds.l2_gas.max_price_per_unit.0,
+                    },
+                },
+            },
+        }
+    }
+}
+
+impl From<starknet_api::transaction::DeployAccountTransactionV3>
+    for BroadcastedDeployAccountTransactionV3
+{
+    fn from(value: starknet_api::transaction::DeployAccountTransactionV3) -> Self {
+        Self {
+            common: BroadcastedTransactionCommonV3 {
+                version: imported::Felt::THREE,
+                signature: value.signature.0.to_vec(),
+                nonce: imported::Felt::ZERO,
+                resource_bounds: value.resource_bounds.into(),
+                tip: value.tip,
+                paymaster_data: value.paymaster_data.0.to_vec(),
+                nonce_data_availability_mode: value.nonce_data_availability_mode,
+                fee_data_availability_mode: value.fee_data_availability_mode,
+            },
+            contract_address_salt: value.contract_address_salt.0,
+            constructor_calldata: value.constructor_calldata.0.to_vec(),
+            class_hash: value.class_hash.0,
+        }
+    }
+}
+
+impl From<starknet_api::transaction::DeployAccountTransactionV3>
+    for BroadcastedDeployAccountTransaction
+{
+    fn from(value: starknet_api::transaction::DeployAccountTransactionV3) -> Self {
+        BroadcastedDeployAccountTransaction::V3(value.into())
+    }
+}
+
+impl From<starknet_api::transaction::DeployAccountTransaction>
+    for BroadcastedDeployAccountTransaction
+{
+    fn from(value: starknet_api::transaction::DeployAccountTransaction) -> Self {
+        match value {
+            starknet_api::transaction::DeployAccountTransaction::V1(tx) => {
+                unimplemented!("Devnet does not support V1 Account Deployment")
+            }
+            starknet_api::transaction::DeployAccountTransaction::V3(tx) => tx.into(),
+        }
+    }
+}
+
+impl From<starknet_api::transaction::InvokeTransactionV3> for BroadcastedInvokeTransactionV3 {
+    fn from(value: starknet_api::transaction::InvokeTransactionV3) -> Self {
+        Self {
+            common: BroadcastedTransactionCommonV3 {
+                version: imported::Felt::THREE,
+                signature: value.signature.0.to_vec(),
+                nonce: value.nonce.0,
+                resource_bounds: value.resource_bounds.into(),
+                tip: value.tip,
+                paymaster_data: value.paymaster_data.0.to_vec(),
+                nonce_data_availability_mode: value.nonce_data_availability_mode,
+                fee_data_availability_mode: value.fee_data_availability_mode,
+            },
+            sender_address: ContractAddress::new(*value.sender_address.0.key()).unwrap(),
+            calldata: value.calldata.0.to_vec(),
+            account_deployment_data: value.account_deployment_data.0.to_vec(),
+        }
+    }
+}
+
+impl From<starknet_api::transaction::InvokeTransactionV3> for BroadcastedInvokeTransaction {
+    fn from(value: starknet_api::transaction::InvokeTransactionV3) -> Self {
+        BroadcastedInvokeTransaction::V3(value.into())
     }
 }

@@ -1,13 +1,14 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
 use starknet_rs_core::chain_id::{MAINNET, SEPOLIA};
 use starknet_rs_core::utils::{cairo_short_string_to_felt, parse_cairo_short_string};
 use starknet_types_core::felt::Felt;
 
 use crate::error::ConversionError;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ChainId {
     Mainnet,
     Testnet,

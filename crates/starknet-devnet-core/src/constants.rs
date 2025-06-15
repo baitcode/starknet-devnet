@@ -47,10 +47,11 @@ pub(crate) const UDC_CONTRACT: &str = include_str!(concat!(
 
 /// https://github.com/argentlabs/argent-contracts-starknet/blob/main/deployments/account.txt
 pub const ARGENT_CONTRACT_VERSION: &str = "0.4.0";
-pub(crate) const ARGENT_CONTRACT_SIERRA: &str = include_str!(concat!(
+pub const ARGENT_CONTRACT_SIERRA: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/contracts/accounts_artifacts/Argent/argent_0.4.0.sierra"
 ));
+
 pub const ARGENT_CONTRACT_CLASS_HASH: Felt =
     Felt::from_hex_unchecked("0x36078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f");
 
