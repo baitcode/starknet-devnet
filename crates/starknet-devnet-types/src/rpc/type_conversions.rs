@@ -7,7 +7,9 @@ use cairo_lang_utils::bigint::BigUintAsHex;
 
 use starknet_rs_core::types::{self as imported};
 
-use crate::rpc::transactions::BroadcastedTransactionCommonV3;
+use crate::rpc::transactions::{
+    BroadcastedTransactionCommonV3, l1_handler_transaction::L1HandlerTransaction,
+};
 
 use super::block::{Block, PendingBlock, ResourcePrice};
 use super::contract_address::ContractAddress;
@@ -1417,6 +1419,20 @@ impl<'a> From<&'a EmittedEvent> for imported::EmittedEvent {
             from_address: value.from_address.into(),
             keys: value.keys.clone(),
             data: value.data.clone(),
+        }
+    }
+}
+
+impl From<imported::L1HandlerTransaction> for L1HandlerTransaction {
+    fn from(value: imported::L1HandlerTransaction) -> Self {
+        Self {
+            l1_transaction_hash: Some(value.transaction_hash.into()),
+            version: value.version,
+            nonce: value.nonce.into(),
+            contract_address: ContractAddress::new(value.contract_address).unwrap(),
+            entry_point_selector: value.entry_point_selector,
+            calldata: value.calldata,
+            paid_fee_on_l1: 1, // This is a placeholder value, as the actual fee is not available in this type
         }
     }
 }
