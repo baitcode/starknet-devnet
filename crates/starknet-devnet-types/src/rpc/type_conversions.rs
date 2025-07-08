@@ -1423,15 +1423,15 @@ impl<'a> From<&'a EmittedEvent> for imported::EmittedEvent {
     }
 }
 
-impl From<imported::L1HandlerTransaction> for L1HandlerTransaction {
-    fn from(value: imported::L1HandlerTransaction) -> Self {
+impl From<&imported::L1HandlerTransaction> for L1HandlerTransaction {
+    fn from(value: &imported::L1HandlerTransaction) -> Self {
         Self {
             l1_transaction_hash: Some(value.transaction_hash.into()),
             version: value.version,
             nonce: value.nonce.into(),
             contract_address: ContractAddress::new(value.contract_address).unwrap(),
             entry_point_selector: value.entry_point_selector,
-            calldata: value.calldata,
+            calldata: value.calldata.clone(),
             paid_fee_on_l1: 1, // This is a placeholder value, as the actual fee is not available in this type
         }
     }
