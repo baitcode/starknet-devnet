@@ -1524,7 +1524,7 @@ impl From<starknet_api::transaction::DeployAccountTransaction>
 {
     fn from(value: starknet_api::transaction::DeployAccountTransaction) -> Self {
         match value {
-            starknet_api::transaction::DeployAccountTransaction::V1(tx) => {
+            starknet_api::transaction::DeployAccountTransaction::V1(_tx) => {
                 unimplemented!("Devnet does not support V1 Account Deployment")
             }
             starknet_api::transaction::DeployAccountTransaction::V3(tx) => tx.into(),
