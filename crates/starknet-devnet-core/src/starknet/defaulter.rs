@@ -6,7 +6,7 @@ use starknet_api::state::StorageKey;
 use starknet_rs_core::types::Felt;
 use starknet_types::contract_class::convert_codegen_to_blockifier_compiled_class;
 use tokio::sync::oneshot;
-use tracing::debug;
+use tracing::{debug, trace};
 
 use super::starknet_config::ForkConfig;
 
@@ -127,10 +127,10 @@ impl BlockingOriginReader {
                 if result.is_null() {
                     // the received response is assumed to mean that the origin doesn't contain the
                     // requested resource
-                    debug!("Forking origin response contains no 'result': {resp_json_value}");
+                    trace!("Forking origin response contains no 'result': {resp_json_value}");
                     Err(OriginError::NoResult)
                 } else {
-                    debug!("Forking origin received {body:?} and successfully returned: {result}");
+                    trace!("Forking origin received {body:?} and successfully returned: {result}");
                     Ok(result.clone())
                 }
             }
